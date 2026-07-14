@@ -13,3 +13,4 @@ class TeacherUser(BaseModel):
     email:str
     username:str
     password:str
+    school:str
