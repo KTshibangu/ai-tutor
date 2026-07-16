@@ -6,6 +6,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_groq import ChatGroq
 from config.db import chunk_collection
+import json
 
 # environment
 load_dotenv()
@@ -43,24 +44,41 @@ If relevant, mention the document source.
 )
 
 quiz_prompt = PromptTemplate.from_template(
-     """
-You are a test-generating assistant.
+"""
+You are an expert teacher creating multiple-choice quizzes.
 
-Using the context below, generate {num_questions}
+Using ONLY the context below, generate exactly {num_questions}
 multiple-choice questions.
 
-Format STRICTLY as:
+Return ONLY valid JSON.
 
-Question 1: ...
-A) ...
-B) ...
-C) ...
-Correct Answer: A
+Rules:
+- Do NOT include markdown.
+- Do NOT wrap the JSON in ```json.
+- Each question must have exactly 4 options.
+- The "answer" field must contain the FULL correct option text, NOT the letter.
+- Return nothing except the JSON array.
+
+Example:
+
+[
+  {{
+    "question": "What is the capital of France?",
+    "options": [
+      "Berlin",
+      "Madrid",
+      "Paris",
+      "Rome"
+    ],
+    "answer": "Paris"
+  }}
+]
 
 Context:
 {context}
 """
 )
+
 # define rag chain
 rag_chain = rag_prompt | llm
 quiz_chain = quiz_prompt | llm
@@ -151,8 +169,16 @@ async def quiz_generation(topic:str,user_role:str,user_grade:int,num_questions:i
         if hasattr(response,"content")
         else str(response)
     )
+    
+    try:
+        if quiz_text.startswith("```"):
+            quiz_text = quiz_text.replace("```json", "").replace("```", "").strip()
+
+        quiz = json.loads(quiz_text)
+    except json.JSONDecodeError:
+        raise ValueError("The LLM did not return valid JSON.")
 
     return {
-        "quiz":quiz_text,
-        "sources":sources,
+        "quiz": quiz,
+        "sources": sources,
     }

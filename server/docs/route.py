@@ -1,6 +1,8 @@
 from fastapi import APIRouter, UploadFile,File,Form,HTTPException
+from config.db import documents_collection
 from .vectorstore import load_vectorstore
 import uuid
+import datetime
 
 router=APIRouter()
 
@@ -26,6 +28,13 @@ async def upload_docs(file: UploadFile=File(...),grade:int=Form(...),):
     # call vectiorstore function
     try:
         await load_vectorstore(uploaded_files=[file],role=ACCESS_ROLE,doc_id=doc_id,grade=grade)
+        documents_collection.insert_one({
+            "doc_id": doc_id,
+            "filename": file.filename,
+            "grade": grade,
+            "access": ACCESS_ROLE,
+            "uploaded_at": datetime.datetime.utcnow(),
+    })
     except Exception as e:
         print("Error during document upload:",e)
         raise HTTPException(
@@ -38,4 +47,25 @@ async def upload_docs(file: UploadFile=File(...),grade:int=Form(...),):
         "doc_id":doc_id,
         "grade":grade,
         "access":ACCESS_ROLE
+    }
+    
+    
+@router.get("/documents")
+async def get_documents():
+    cursor = documents_collection.find().sort("uploaded_at", -1)
+
+    documents = []
+
+    for doc in cursor:
+        documents.append({
+            "id": str(doc["_id"]),
+            "doc_id": doc["doc_id"],
+            "filename": doc["filename"],
+            "grade": doc["grade"],
+            "access": doc["access"],
+            "uploaded_at": doc["uploaded_at"],
+        })
+
+    return {
+        "documents": documents
     }

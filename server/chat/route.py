@@ -88,10 +88,11 @@ async def check_quiz_answers(request:QuizAnswerRequest,user=Depends(authenticate
         raise HTTPException(403,"Unauthorized")
     
 
-    correct_answers = []
-    for line in quiz_doc["quiz_data"].split("\n"):
-        if line.startswith("Correct Answer:"):
-            correct_answers.append(line.split(":")[1].strip()[0])
+    correct_answers = [
+        question["answer"]
+        for question in quiz_doc["quiz_data"]
+    ]
+
 
     if len(request.answers) != len(correct_answers):
         raise HTTPException(400, "Answer count mismatch")
@@ -101,7 +102,7 @@ async def check_quiz_answers(request:QuizAnswerRequest,user=Depends(authenticate
 
 
     for i, ans in enumerate(request.answers):
-        is_correct = ans.strip().upper() == correct_answers[i]
+        is_correct = ans.strip() == correct_answers[i]
         if is_correct:
             score += 1
 
