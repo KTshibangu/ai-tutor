@@ -10,8 +10,43 @@ import { Link } from "react-router-dom";
 import StatsCard from "../components/student/StatsCard";
 import QuickActionCard from "../components/student/QuickActionCard";
 import RecentQuizCard from "../components/student/RecentQuizCard";
+import { useState, useEffect } from "react";
+import { getQuizHistory } from "@/api/quiz";
 
 export default function StudentDashboard() {
+  const [quizStats, setQuizStats] = useState([])
+  const [loading, setLoading] = useState(false)
+
+  async function loadQuizStats() {
+    try {
+      setLoading(true)
+      const quizHistory = await getQuizHistory();
+      setQuizStats(quizHistory);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadQuizStats();
+  }, [])
+
+  let totalQuestions = 0
+  let aggScore = 0
+  let totalScore = 0
+  for (let i = 0; i < quizStats.length; i++) {
+    totalQuestions += quizStats[i].quiz_content.length;
+    aggScore += quizStats[i].score
+    totalScore += quizStats[i].total
+  }
+
+  const scorePct = ((aggScore / totalScore) * 100).toFixed(2)
+
+
+
+
   return (
     <div className="space-y-8">
 
@@ -28,27 +63,27 @@ export default function StudentDashboard() {
       <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
 
         <StatsCard
-          title="Questions Asked"
-          value="34"
+          title="Quiz Sessions"
+          value={quizStats.length}
           icon={<MessageSquare />}
         />
 
         <StatsCard
-          title="Quizzes Completed"
-          value="12"
+          title="Total Quiz Questions"
+          value={totalQuestions}
+          icon={<ClipboardCheck />}
+        />
+
+        <StatsCard
+          title="Total Correct Answers"
+          value={aggScore}
           icon={<ClipboardCheck />}
         />
 
         <StatsCard
           title="Average Score"
-          value="86%"
+          value={`${scorePct}%`}
           icon={<BookOpen />}
-        />
-
-        <StatsCard
-          title="Study Sessions"
-          value="9"
-          icon={<History />}
         />
 
       </div>
