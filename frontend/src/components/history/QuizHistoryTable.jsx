@@ -1,87 +1,103 @@
+import { getQuizHistory } from "@/api/quiz";
 import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-
-const history = [
-  {
-    subject: "Mathematics",
-    score: 90,
-    date: "12 Jul 2026",
-  },
-  {
-    subject: "Physics",
-    score: 82,
-    date: "11 Jul 2026",
-  },
-  {
-    subject: "Chemistry",
-    score: 75,
-    date: "10 Jul 2026",
-  },
-  {
-    subject: "Biology",
-    score: 94,
-    date: "08 Jul 2026",
-  },
-];
+import { useEffect, useState } from "react";
+import Loading from "../Loading";
 
 export default function QuizHistoryTable() {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false)
+
+  async function loadHistory() {
+    try {
+      setLoading(true)
+      const quizHistory = await getQuizHistory();
+      setHistory(quizHistory);
+      console.log(history)
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadHistory();
+  }, [])
+
+  if (history.length === 0) {
+    return (
+      <Card className="p-6">
+        No history uploaded yet.
+      </Card>
+    );
+  }
+
   return (
     <Card>
 
       <CardContent className="p-0">
 
-        <table className="w-full">
+        {
+          loading ? (
+            <div className="flex justify-center p-12">
+              <div className="animate-spin h-8 w-8 border-2 border-indigo-600 border-t-transparent rounded-full" />
+            </div>
+          ) : (
+            <table className="w-full">
 
-          <thead className="bg-slate-100">
+              <thead className="bg-slate-100">
 
-            <tr>
+                <tr>
 
-              <th className="text-left p-4">
-                Subject
-              </th>
+                  <th className="text-left p-4">
+                    Topic
+                  </th>
 
-              <th className="text-left p-4">
-                Score
-              </th>
+                  <th className="text-left p-4">
+                    Score (%)
+                  </th>
 
-              <th className="text-left p-4">
-                Date
-              </th>
+                  <th className="text-left p-4">
+                    Date
+                  </th>
 
-            </tr>
+                </tr>
 
-          </thead>
+              </thead>
 
-          <tbody>
+              <tbody>
 
-            {history.map((quiz, index) => (
+                {history.map((h, index) => (
 
-              <tr
-                key={index}
-                className="border-b"
-              >
+                  <tr
+                    key={index}
+                    className="border-b"
+                  >
 
-                <td className="p-4">
-                  {quiz.subject}
-                </td>
+                    <td className="p-4">
+                      {h.topic}
+                    </td>
 
-                <td className="p-4">
-                  {quiz.score}%
-                </td>
+                    <td className="p-4">
+                      {(h.score / h.total * 100).toFixed(2)}
+                    </td>
 
-                <td className="p-4">
-                  {quiz.date}
-                </td>
+                    <td className="p-4">
+                      {h.timestamp.split("T")[0]}
+                    </td>
 
-              </tr>
+                  </tr>
 
-            ))}
+                ))}
 
-          </tbody>
+              </tbody>
 
-        </table>
+            </table>
+          )
+        }
 
       </CardContent>
 
