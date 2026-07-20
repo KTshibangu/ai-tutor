@@ -18,7 +18,6 @@ export default function RecentQuizCard() {
       setLoading(true)
       const quizHistory = await getQuizHistory(1, 3);
       setRecentQuizzes(quizHistory);
-      console.log(recentQuizzes)
     } catch (err) {
       console.error(err);
     } finally {
