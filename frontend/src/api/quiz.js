@@ -37,8 +37,13 @@ export const checkQuiz = async (quizId, answers) => {
   return response.data;
 };
 
-export const getQuizHistory = async () => {
-  const response = await api.get("/quiz/history", getAuth());
+export const getQuizHistory = async (page = 1, limit = 10) => {
+  const response = await api.get("/quiz/history", {
+    params: {
+      page,
+      limit
+    }
+  }, getAuth());
 
   return response.data.history;
 };
