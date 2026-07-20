@@ -4,25 +4,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+
+import { getQuizHistory } from "@/api/quiz";
+import { Loader2 } from "lucide-react";
 
 export default function RecentQuizCard() {
-  const quizzes = [
-    {
-      subject: "Mathematics",
-      score: 90,
-      date: "12 Jul 2026",
-    },
-    {
-      subject: "Physics",
-      score: 84,
-      date: "10 Jul 2026",
-    },
-    {
-      subject: "Biology",
-      score: 95,
-      date: "08 Jul 2026",
-    },
-  ];
+  const [recentQuizzes, setRecentQuizzes] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  async function getRecent() {
+    try {
+      setLoading(true)
+      const quizHistory = await getQuizHistory(1, 3);
+      setRecentQuizzes(quizHistory);
+      console.log(recentQuizzes)
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    getRecent();
+  }, [])
+
 
   return (
     <Card>
@@ -37,36 +44,49 @@ export default function RecentQuizCard() {
 
       <CardContent>
 
-        <div className="space-y-4">
+        {
+          loading ? (
+            <div className="flex justify-center p-12">
+              <div className="animate-spin h-8 w-8 border-2 border-indigo-600 border-t-transparent rounded-full" />
+            </div>
+          ) : (
+            <div className="space-y-4">
 
-          {quizzes.map((quiz, index) => (
+              {recentQuizzes.map((recentQuiz, index) => (
 
-            <div
-              key={index}
-              className="flex justify-between border rounded-xl p-4"
-            >
+                <div
+                  key={index}
+                  className="flex justify-between border rounded-xl p-4"
+                >
 
-              <div>
+                  <div>
 
-                <h3 className="font-semibold">
-                  {quiz.subject}
-                </h3>
+                    <h3 className="font-semibold">
+                      {recentQuiz.topic}
+                    </h3>
 
-                <p className="text-sm text-muted-foreground">
-                  {quiz.date}
-                </p>
+                    <p className="text-sm text-muted-foreground">
+                      {recentQuiz.timestamp.split("T")[0]}
+                    </p>
 
-              </div>
+                  </div>
 
-              <div className="font-bold text-blue-600">
-                {quiz.score}%
-              </div>
+                  <div className="font-bold text-blue-600">
+                    {
+                      recentQuiz.total ?
+                        (Number(recentQuiz.score) / Number(recentQuiz.total)).toFixed(2) * 100 :
+                        "0.00"
+                    }%
+                  </div>
+
+                </div>
+
+              ))}
 
             </div>
+          )
 
-          ))}
-
-        </div>
+        }
 
       </CardContent>
 

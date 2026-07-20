@@ -19,11 +19,11 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       path: "/student",
     },
-    {
-      name: "Chat",
-      icon: MessageSquare,
-      path: "/student/chat",
-    },
+    // {
+    //   name: "Chat",
+    //   icon: MessageSquare,
+    //   path: "/student/chat",
+    // },
     {
       name: "Quiz",
       icon: ClipboardCheck,
@@ -42,11 +42,11 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       path: "/teacher",
     },
-    {
-      name: "Documents",
-      icon: FileText,
-      path: "teacher/documents",
-    },
+    // {
+    //   name: "Documents",
+    //   icon: FileText,
+    //   path: "teacher/documents",
+    // },
   ];
 
   const links =

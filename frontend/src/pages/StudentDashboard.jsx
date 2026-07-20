@@ -16,6 +16,7 @@ import { getQuizHistory } from "@/api/quiz";
 export default function StudentDashboard() {
   const [quizStats, setQuizStats] = useState([])
   const [loading, setLoading] = useState(false)
+  
 
   async function loadQuizStats() {
     try {
@@ -42,7 +43,10 @@ export default function StudentDashboard() {
     totalScore += quizStats[i].total
   }
 
-  const scorePct = ((aggScore / totalScore) * 100).toFixed(2)
+  const scorePct =
+  totalScore > 0
+    ? ((Number(aggScore) / Number(totalScore)) * 100).toFixed(2)
+    : "0.00";
 
 
 
@@ -96,12 +100,12 @@ export default function StudentDashboard() {
 
         <div className="grid gap-5 md:grid-cols-3">
 
-          <QuickActionCard
+          {/* <QuickActionCard
             title="Chat with AI"
             description="Ask questions about your uploaded study material."
             link="/student/chat"
             buttonText="Start Chat"
-          />
+          /> */}
 
           <QuickActionCard
             title="Generate Quiz"

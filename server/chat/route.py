@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends, Body
+from fastapi import APIRouter, HTTPException, Depends, Body, Query
+import math
 from auth.route import authenticate
 from chat.chat_query import answer_query,quiz_generation
 from pydantic import BaseModel
@@ -132,7 +133,49 @@ async def check_quiz_answers(request:QuizAnswerRequest,user=Depends(authenticate
 
 
 @router.get("/quiz/history")
-async def get_quiz_history(user=Depends(authenticate)):
+async def get_quiz_history(
+    user=Depends(authenticate),
+    page: int = Query(1, ge=1),
+    limit: int = Query(10, ge=1),
+):
+    if user["role"] != "Student":
+        raise HTTPException(
+            status_code=403,
+            detail="Only students can view quiz history"
+        )
+
+    # Total number of quiz attempts
+    total = quiz_history.count_documents({
+        "user_id": user["user_id"]
+    })
+
+    # Calculate documents to skip
+    skip = (page - 1) * limit
+
+    # Fetch only the requested page
+    cursor = (
+        quiz_history.find({"user_id": user["user_id"]})
+        .sort("timestamp", -1)
+        .skip(skip)
+        .limit(limit)
+    )
+
+    history = []
+
+    for doc in cursor:
+        doc["id"] = str(doc.pop("_id"))
+        doc["quiz_id"] = str(doc["quiz_id"])
+        doc.pop("user_id", None)
+        history.append(doc)
+
+    return {
+        "message": f"Found {total} attempts",
+        "history": history,
+        "page": page,
+        "limit": limit,
+        "total": total,
+        "pages": math.ceil(total / limit),
+    }
     if user["role"] != "Student":
         raise HTTPException(
             403,
