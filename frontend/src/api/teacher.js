@@ -11,11 +11,11 @@ const getAuth = () => {
   };
 };
 
-export const uploadDocument = async (file, grade) => {
+export const uploadDocument = async (file, topic) => {
   const formData = new FormData();
 
   formData.append("file", file);
-  formData.append("grade", grade);
+  formData.append("topic", topic);
 
   const response = await api.post(
     "/upload_docs",
@@ -39,3 +39,4 @@ export const getDocuments = async () => {
 
   return response.data.documents;
 };
+

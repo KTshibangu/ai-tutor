@@ -38,7 +38,7 @@ def get_pinecone_index():
     return index
 
 
-async  def load_vectorstore(uploaded_files,role:str,doc_id:str,grade:int):
+async  def load_vectorstore(uploaded_files,role:str,doc_id:str,topic:str):
     # initilize emedding model
     embed_model=GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
     # get pinecone index
@@ -69,7 +69,7 @@ async  def load_vectorstore(uploaded_files,role:str,doc_id:str,grade:int):
                 "text":chunk.page_content,
                 "page":int(chunk.metadata.get("page",0)),
                 "source":file.filename,
-                "grade":grade,
+                "topic":topic,
                 "role":role,
             })
         if chunk_docs:
@@ -85,7 +85,7 @@ async  def load_vectorstore(uploaded_files,role:str,doc_id:str,grade:int):
                 "doc_id":doc_id,
                 "page":int(chunks[i].metadata.get("page",0)),
                 "source":file.filename,
-                "grade":grade,
+                "topic":topic,
                 "role":role,
             }
             for i in range(len(embeddings))

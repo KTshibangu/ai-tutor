@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 import QuestionCard from "../components/quiz/QuestionCard";
+
 
 import {
   generateQuiz,
   checkQuiz,
+  getTopics,
 } from "../api/quiz";
 
 export default function Quiz() {
-  const [topic, setTopic] = useState("");
+  const [topics, setTopics] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState("")
   const [questions, setQuestions] = useState([]);
   const [quizId, setQuizId] = useState(null);
   const [answers, setAnswers] = useState({});
@@ -20,7 +23,7 @@ export default function Quiz() {
   const [result, setResult] = useState(null);
 
   const loadQuiz = async () => {
-    if (!topic.trim()) {
+    if (!selectedTopic.trim()) {
       alert("Please enter a topic.");
       return;
     }
@@ -28,7 +31,7 @@ export default function Quiz() {
     try {
       setLoading(true);
 
-      const data = await generateQuiz(topic, 3);
+      const data = await generateQuiz(selectedTopic, 3);
 
       setQuestions(data.quiz);
       setQuizId(data.quiz_id);
@@ -59,6 +62,19 @@ export default function Quiz() {
       alert("Failed to submit quiz.");
     }
   };
+
+  useEffect(() => {
+    async function fetchTopics() {
+      try {
+        const data = await getTopics();
+        setTopics(data.topics);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    fetchTopics();
+  }, []);
 
   if (loading) {
     return (
@@ -151,11 +167,25 @@ export default function Quiz() {
       {questions.length === 0 ? (
         <div className="space-y-4">
 
-          <Input
-            placeholder="Enter a topic (e.g. Algebra)"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-          />
+          <Select
+            value={selectedTopic}
+            onValueChange={setSelectedTopic}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select a topic" />
+            </SelectTrigger>
+
+            <SelectContent>
+              {topics.map((topic) => (
+                <SelectItem
+                  key={topic}
+                  value={topic}
+                >
+                  {topic}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <Button
             className="w-full"

@@ -53,7 +53,6 @@ async def quiz(request:QuizRequest, user=Depends(authenticate)):
     response = await quiz_generation(
         request.topic,
         user["role"],
-        user["grade"],
         request.num_questions
     )
 

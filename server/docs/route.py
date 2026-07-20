@@ -7,7 +7,7 @@ import datetime
 router=APIRouter()
 
 @router.post("/upload_docs")
-async def upload_docs(file: UploadFile=File(...),grade:int=Form(...),):
+async def upload_docs(file: UploadFile=File(...),topic:str=Form(...),):
     """
     Upload a PDF docuent and index it into:
     - MongoDB (full text chunks)
@@ -27,11 +27,11 @@ async def upload_docs(file: UploadFile=File(...),grade:int=Form(...),):
 
     # call vectiorstore function
     try:
-        await load_vectorstore(uploaded_files=[file],role=ACCESS_ROLE,doc_id=doc_id,grade=grade)
+        await load_vectorstore(uploaded_files=[file],role=ACCESS_ROLE,doc_id=doc_id,topic=topic)
         documents_collection.insert_one({
             "doc_id": doc_id,
             "filename": file.filename,
-            "grade": grade,
+            "topic": topic,
             "access": ACCESS_ROLE,
             "uploaded_at": datetime.datetime.utcnow(),
     })
@@ -45,7 +45,7 @@ async def upload_docs(file: UploadFile=File(...),grade:int=Form(...),):
     return {
         "message":f"{file.filename} uploaded and indexed successfully",
         "doc_id":doc_id,
-        "grade":grade,
+        "topic":topic,
         "access":ACCESS_ROLE
     }
     
@@ -61,11 +61,20 @@ async def get_documents():
             "id": str(doc["_id"]),
             "doc_id": doc["doc_id"],
             "filename": doc["filename"],
-            "grade": doc["grade"],
+            "topic": doc["topic"],
             "access": doc["access"],
             "uploaded_at": doc["uploaded_at"],
         })
 
     return {
         "documents": documents
+    }
+
+
+@router.get("/documents/topics")
+async def get_topics():
+    topics = documents_collection.distinct("topic")
+
+    return {
+        "topics": sorted(topics)
     }

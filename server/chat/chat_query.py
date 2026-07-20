@@ -25,7 +25,7 @@ index=pc.Index(PINECONE_INDEX_NAME)
 #  define embedding model
 embed_model=GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 #  define llm model
-llm=ChatGroq(temperature=0.3, model_name="llama-3.3-70b-versatile", groq_api_key=GROQ_API_KEY)
+llm=ChatGroq(temperature=0.6, model_name="llama-3.3-70b-versatile", groq_api_key=GROQ_API_KEY)
 #  define chat prompt
 rag_prompt = PromptTemplate.from_template(
     """
@@ -84,13 +84,12 @@ rag_chain = rag_prompt | llm
 quiz_chain = quiz_prompt | llm
 
 #  define the chat function
-async def answer_query(query:str,user_role:str,user_grade:int)->dict:
+async def answer_query(query:str,user_role:str)->dict:
     # embedding generation
     embedding = await asyncio.to_thread(embed_model.embed_query,query)
-    #  etrieve relevant embedding from vector db
+    #  retrieve relevant embedding from vector db
     results = await asyncio.to_thread(
         index.query,vector = embedding,top_k=5,include_metadata=True,filter={
-            "grade":user_grade,
             "role":{"$in":["Public",user_role]}
         },
     )
@@ -130,16 +129,16 @@ async def answer_query(query:str,user_role:str,user_grade:int)->dict:
 
 
 
-async def quiz_generation(topic:str,user_role:str,user_grade:int,num_questions:int=3,)->dict:
+async def quiz_generation(topic:str,user_role:str,num_questions:int=3,)->dict:
     # embedding generation
     embedding = await asyncio.to_thread(embed_model.embed_query,topic)
     # retrieve relevant embedding from vector db
     results = await asyncio.to_thread(
-        index.query,vector = embedding,top_k=5,include_metadata=True,filter={
-            "grade":user_grade,
+        index.query,vector = embedding,top_k=20,include_values=True,include_metadata=True,filter={
             "role":{"$in":["Public",user_role]}
         },
     )
+
     # validation check 
     if not results.get("matches"):
         return {"quiz":"No relevant information found to generate quiz","sources":[]}

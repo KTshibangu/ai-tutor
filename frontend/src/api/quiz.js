@@ -42,3 +42,8 @@ export const getQuizHistory = async () => {
 
   return response.data.history;
 };
+
+export const getTopics = async () => {
+  const response = await api.get("/documents/topics");
+  return response.data;
+};

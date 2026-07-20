@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 
 export default function UploadCard({ onUploadSuccess }) {
   const [file, setFile] = useState(null);
-  const [grade, setGrade] = useState(1);
+  const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleUpload = async () => {
@@ -31,7 +31,7 @@ export default function UploadCard({ onUploadSuccess }) {
 
       const response = await uploadDocument(
         file,
-        Number(grade)
+        topic
       );
 
       toast.success(response.message);
@@ -81,15 +81,13 @@ export default function UploadCard({ onUploadSuccess }) {
 
         <div>
 
-          <Label>Grade</Label>
+          <Label>Topic</Label>
 
           <Input
-            type="number"
-            min={1}
-            max={12}
-            value={grade}
+            type="text"
+            value={topic}
             onChange={(e) =>
-              setGrade(e.target.value)
+              setTopic(e.target.value)
             }
           />
 
