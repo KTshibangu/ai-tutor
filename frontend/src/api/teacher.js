@@ -1,16 +1,5 @@
 import api from "./axios";
 
-const getAuth = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-
-  return {
-    auth: {
-      username: user.username,
-      password: user.password,
-    },
-  };
-};
-
 export const uploadDocument = async (file, topic) => {
   const formData = new FormData();
 
@@ -21,7 +10,6 @@ export const uploadDocument = async (file, topic) => {
     "/upload_docs",
     formData,
     {
-      ...getAuth(),
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -32,11 +20,7 @@ export const uploadDocument = async (file, topic) => {
 };
 
 export const getDocuments = async () => {
-  const response = await api.get(
-    "/documents",
-    getAuth()
-  );
+  const response = await api.get("/documents");
 
   return response.data.documents;
 };
-

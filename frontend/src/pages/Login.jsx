@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -9,14 +9,26 @@ import { loginSchema } from "../validations/loginSchema";
 import { login as loginRequest } from "../api/auth";
 import { useAuth } from "../context/AuthContext";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+
+  const {
+    login,
+    authenticated,
+    user: currentUser,
+  } = useAuth();
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -29,21 +41,43 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
   });
 
+  // Prevent logged-in users from seeing the login page
+  if (authenticated) {
+    return (
+      <Navigate
+        to={
+          currentUser?.role === "Teacher"
+            ? "/teacher"
+            : "/student"
+        }
+        replace
+      />
+    );
+  }
+
   const onSubmit = async (data) => {
     try {
       setLoading(true);
 
-      const user = await loginRequest(data.username, data.password);
+      const loginResponse = await loginRequest(
+        data.username,
+        data.password
+      );
 
-      login(user);
+      login({
+        username: loginResponse.username,
+        role: loginResponse.role,
+        token: loginResponse.access_token,
+      });
 
       toast.success("Welcome back!");
 
-      if (user.role === "Teacher") {
-        navigate("/teacher");
-      } else {
-        navigate("/student");
-      }
+      navigate(
+        loginResponse.role === "Teacher"
+          ? "/teacher"
+          : "/student",
+        { replace: true }
+      );
     } catch (err) {
       toast.error(
         err.response?.data?.detail ||
@@ -56,11 +90,8 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 p-6">
-
       <Card className="w-full max-w-md shadow-xl">
-
         <CardHeader>
-
           <CardTitle className="text-3xl">
             Welcome Back
           </CardTitle>
@@ -68,18 +99,14 @@ export default function Login() {
           <CardDescription>
             Login to continue learning
           </CardDescription>
-
         </CardHeader>
 
         <CardContent>
-
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-5"
           >
-
             <div>
-
               <Label>Username</Label>
 
               <Input
@@ -92,15 +119,12 @@ export default function Login() {
                   {errors.username.message}
                 </p>
               )}
-
             </div>
 
             <div>
-
               <Label>Password</Label>
 
               <div className="relative">
-
                 <Input
                   type={showPassword ? "text" : "password"}
                   {...register("password")}
@@ -109,7 +133,9 @@ export default function Login() {
 
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() =>
+                    setShowPassword(!showPassword)
+                  }
                   className="absolute right-3 top-2.5"
                 >
                   {showPassword ? (
@@ -118,7 +144,6 @@ export default function Login() {
                     <Eye size={18} />
                   )}
                 </button>
-
               </div>
 
               {errors.password && (
@@ -126,7 +151,6 @@ export default function Login() {
                   {errors.password.message}
                 </p>
               )}
-
             </div>
 
             <Button
@@ -143,26 +167,19 @@ export default function Login() {
                 "Login"
               )}
             </Button>
-
           </form>
 
           <p className="text-center text-sm mt-6">
-
             Don't have an account?
-
             <Link
               to="/signup"
-              className="text-blue-600 ml-1 hover:underline"
+              className="ml-1 text-blue-600 hover:underline"
             >
               Sign Up
             </Link>
-
           </p>
-
         </CardContent>
-
       </Card>
-
     </div>
   );
 }
