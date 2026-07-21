@@ -1,23 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Body
 from .model import StudentUser, TeacherUser
 from config.db import users_collection
 from .hash_utils import hash_password,verify_password
+from .jwt import verify_token, create_access_token
+
 
 router = APIRouter()
 security = HTTPBasic()
+security = HTTPBearer()
 
-def authenticate(credentials:HTTPBasicCredentials=Depends(security)):
-    """Authenticates a user using HTTP Basic Auth"""
-    user = users_collection.find_one({"username":credentials.username})
-    if not user or not verify_password(credentials.password,user.get("password")):
-        raise HTTPException(status_code=401, detail="Invalid username or password")
-    return {
-        "username":user.get("username"),
-        "role":user.get("role"),
-        "grade":user.get("grade"),
-        "user_id":str(user.get("_id"))
-    }
+def authenticate(credentials:HTTPAuthorizationCredentials=Depends(security)):
+    """Authenticates a user using JWT"""
+    payload = verify_token(credentials.credentials)
+
+    if payload is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token"
+        )
+
+    return payload
 
 
 @router.post("/signup/student")
@@ -62,7 +67,36 @@ def teacher_student(req:TeacherUser):
     return {"message":"Teacher user created successfully"}
 
 
-@router.get("/login")
-def login(user=Depends(authenticate)):
-    """Handles user login"""
-    return {"message":f"Welcome {user['username']}","role":user["role"]}
+@router.post("/login")
+def login(
+    username: str = Body(...),
+    password: str = Body(...)
+):
+    user = users_collection.find_one({
+        "username": username
+    })
+
+    if not user:
+        raise HTTPException(
+            401,
+            "Invalid username or password"
+        )
+
+    if not verify_password(password, user["password"]):
+        raise HTTPException(
+            401,
+            "Invalid username or password"
+        )
+
+    token = create_access_token({
+        "username": user["username"],
+        "role": user["role"],
+        "user_id": str(user["_id"])
+    })
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "role": user["role"],
+        "username": user["username"]
+    }

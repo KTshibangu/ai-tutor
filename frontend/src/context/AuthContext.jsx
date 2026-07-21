@@ -15,9 +15,14 @@ export function AuthProvider({ children }) {
       localStorage.removeItem("user");
   }, [user]);
 
-  const login = (userData) => setUser(userData);
+  const login = (userData) => {
+    setUser(userData);
+  }
 
-  const logout = () => setUser(null);
+  const logout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+  }
 
   return (
     <AuthContext.Provider

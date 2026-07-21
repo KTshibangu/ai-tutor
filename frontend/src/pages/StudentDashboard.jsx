@@ -131,7 +131,7 @@ export default function StudentDashboard() {
           Recent Quiz Attempts
         </h2>
 
-        <RecentQuizCard />
+        <RecentQuizCard loading = {loading}/>
 
       </div>
 

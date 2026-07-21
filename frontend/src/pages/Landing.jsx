@@ -1,10 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import LandingPageImg from '../assets/landing-page.jpg';
 import Feature from "../components/Feature";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Landing() {
+    const { user } = useAuth();
+
+    if (user) {
+        return (
+            <Navigate
+                to={user.role === "Teacher" ? "/teacher" : "/student"}
+                replace
+            />
+        );
+    }
+
     return (
         <div className="min-h-screen bg-slate-50">
 

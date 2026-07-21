@@ -33,3 +33,6 @@ bcrypt
 
 streamlit
 requests
+
+python-jose[cryptography] 
+python-multipart

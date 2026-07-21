@@ -44,9 +44,9 @@ export default function AppRoutes() {
                 }
             >
                 <Route index element={<StudentDashboard />} />
-                 <Route path="chat" element={<Chat />} />
-                 <Route path="quiz" element={<Quiz />} />
-                 <Route path="history" element={<History />} />
+                <Route path="chat" element={<Chat />} />
+                <Route path="quiz" element={<Quiz />} />
+                <Route path="history" element={<History />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

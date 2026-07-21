@@ -58,7 +58,7 @@ export default function UploadCard({ onUploadSuccess }) {
       <CardHeader>
 
         <CardTitle>
-          Upload Study Material
+          Upload Study Material (PDF not longer than 10 pages)
         </CardTitle>
 
       </CardHeader>
