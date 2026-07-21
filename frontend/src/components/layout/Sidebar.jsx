@@ -1,16 +1,14 @@
 import {
   LayoutDashboard,
-  FileText,
-  MessageSquare,
   ClipboardCheck,
   History,
   LogOut,
+  X,
 } from "lucide-react";
-
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-export default function Sidebar() {
+export default function Sidebar({ open, setOpen }) {
   const { logout, user } = useAuth();
 
   const studentLinks = [
@@ -19,11 +17,6 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       path: "/student",
     },
-    // {
-    //   name: "Chat",
-    //   icon: MessageSquare,
-    //   path: "/student/chat",
-    // },
     {
       name: "Quiz",
       icon: ClipboardCheck,
@@ -42,11 +35,6 @@ export default function Sidebar() {
       icon: LayoutDashboard,
       path: "/teacher",
     },
-    // {
-    //   name: "Documents",
-    //   icon: FileText,
-    //   path: "teacher/documents",
-    // },
   ];
 
   const links =
@@ -55,59 +43,91 @@ export default function Sidebar() {
       : studentLinks;
 
   return (
-    <aside className="w-72 bg-white border-r flex flex-col">
+    <>
+      {/* Mobile Overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
 
-      <div className="border-b p-6">
+      <aside
+        className={`
+          fixed top-0 left-0 z-50
+          h-screen w-72
+          bg-white border-r
+          flex flex-col
+          transition-transform duration-300 ease-in-out
 
-        <h1 className="text-3xl font-bold text-blue-600">
-          AI Tutor
-        </h1>
+          ${
+            open
+              ? "translate-x-0"
+              : "-translate-x-full"
+          }
 
-        <p className="text-sm text-gray-500 mt-2">
-          {user?.username}
-        </p>
+          lg:static
+          lg:translate-x-0
+        `}
+      >
+        {/* Mobile Close Button */}
+        <div className="flex justify-end p-4 lg:hidden">
+          <button onClick={() => setOpen(false)}>
+            <X size={26} />
+          </button>
+        </div>
 
-      </div>
+        {/* Logo */}
+        <div className="border-b p-6">
+          <h1 className="text-3xl font-bold text-blue-600">
+            AI Tutor
+          </h1>
 
-      <nav className="flex-1 px-4 py-6 space-y-2">
+          <p className="mt-2 text-sm text-gray-500">
+            {user?.username}
+          </p>
+        </div>
 
-        {links.map((link) => {
-          const Icon = link.icon;
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-6 space-y-2">
+          {links.map((link) => {
+            const Icon = link.icon;
 
-          return (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              end
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-4 py-3 transition ${
-                  isActive
-                    ? "bg-blue-600 text-white"
-                    : "hover:bg-slate-100"
-                }`
-              }
-            >
-              <Icon size={20} />
+            return (
+              <NavLink
+                key={link.path}
+                to={link.path}
+                end
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${
+                    isActive
+                      ? "bg-blue-600 text-white"
+                      : "text-slate-700 hover:bg-slate-100"
+                  }`
+                }
+              >
+                <Icon size={20} />
+                <span>{link.name}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
 
-              {link.name}
-            </NavLink>
-          );
-        })}
-      </nav>
-
-      <div className="border-t p-4">
-
-        <button
-          onClick={logout}
-          className="flex items-center gap-3 text-red-600 w-full rounded-xl px-4 py-3 hover:bg-red-50"
-        >
-          <LogOut size={20} />
-
-          Logout
-        </button>
-
-      </div>
-
-    </aside>
+        {/* Logout */}
+        <div className="border-t p-4">
+          <button
+            onClick={() => {
+              logout();
+              setOpen(false);
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-red-600 transition-colors hover:bg-red-50"
+          >
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }
