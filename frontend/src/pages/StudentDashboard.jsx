@@ -21,8 +21,8 @@ export default function StudentDashboard() {
   async function loadQuizStats() {
     try {
       setLoading(true)
-      const quizHistory = await getQuizHistory();
-      setQuizStats(quizHistory);
+      const response = await getQuizHistory();
+      setQuizStats(response.history);
     } catch (err) {
       console.error(err);
     } finally {

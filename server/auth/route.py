@@ -62,7 +62,6 @@ def teacher_student(req:TeacherUser):
         "username":req.username,
         "password":hashed_password,
         "role":"Teacher",
-        "school":req.school,
     })
     return {"message":"Teacher user created successfully"}
 

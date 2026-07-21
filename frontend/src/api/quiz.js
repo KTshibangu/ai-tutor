@@ -32,7 +32,7 @@ export const getQuizHistory = async (page = 1, limit = 10) => {
     }
   });
 
-  return response.data.history;
+  return response.data;
 };
 
 export const getTopics = async () => {

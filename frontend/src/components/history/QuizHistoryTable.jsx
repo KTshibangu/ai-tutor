@@ -16,10 +16,10 @@ export default function QuizHistoryTable() {
   async function loadHistory() {
     try {
       setLoading(true)
-      const quizHistory = await getQuizHistory(page, 10);
-      setHistory(quizHistory);
+      const response = await getQuizHistory(page, 10);
+      setHistory(response.history);
 
-      setPages(pages);
+      setPages(response.pages);
       console.log(pages);
     } catch (err) {
       console.error(err);
@@ -32,7 +32,11 @@ export default function QuizHistoryTable() {
     loadHistory();
   }, [page])
 
-  if (history.length === 0) {
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (!loading && history.length === 0) {
     return (
       <Card className="p-6">
         No history uploaded yet.

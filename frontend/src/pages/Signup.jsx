@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
+
+import { useAuth } from "@/context/AuthContext";
 
 import { signupStudent, signupTeacher } from "../api/auth";
 
@@ -93,6 +95,17 @@ export default function Signup() {
       setLoading(false);
     }
   };
+
+  const { user } = useAuth();
+
+  if (user) {
+    return (
+      <Navigate
+        to={user.role === "Teacher" ? "/teacher" : "/student"}
+        replace
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-slate-100 p-6">
